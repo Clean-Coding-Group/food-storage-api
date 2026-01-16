@@ -1,8 +1,5 @@
 using FoodStorageApi.Application.Common.Interfaces;
-using FoodStorageApi.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 
 namespace FoodStorageApi.Infrastructure.IntegrationTests.DependencyInjection;
 
