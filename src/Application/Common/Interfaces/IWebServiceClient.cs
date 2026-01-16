@@ -1,6 +1,6 @@
 namespace FoodStorageApi.Application.Common.Interfaces;
 
-public interface IWebServiceClient
+public interface IBaseWebServiceClient
 {
   Task<string> GetAsync(string endpoint, CancellationToken cancellationToken = default);
   Task<string> PostAsync(string endpoint, string content, CancellationToken cancellationToken = default);

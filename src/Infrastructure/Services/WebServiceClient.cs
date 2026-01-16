@@ -4,12 +4,12 @@ using System.Text;
 
 namespace FoodStorageApi.Infrastructure.Services;
 
-public class WebServiceClient : IWebServiceClient
+public class BaseWebServiceClient : IBaseWebServiceClient
 {
   private readonly HttpClient _httpClient;
-  private readonly ILogger<WebServiceClient> _logger;
+  private readonly ILogger<BaseWebServiceClient> _logger;
 
-  public WebServiceClient(HttpClient httpClient, ILogger<WebServiceClient> logger)
+  public BaseWebServiceClient(HttpClient httpClient, ILogger<BaseWebServiceClient> logger)
   {
     _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
     _logger = logger ?? throw new ArgumentNullException(nameof(logger));
