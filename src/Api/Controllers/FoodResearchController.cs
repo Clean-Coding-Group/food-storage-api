@@ -12,16 +12,16 @@ namespace FoodStorageApi.Api.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Produces("application/json")]
-public class ProductLookupController : ControllerBase
+public class FoodResearchController : ControllerBase
 {
   private readonly IOpenFoodFactsService _openFoodFactsService;
   private readonly IMapper _mapper;
-  private readonly ILogger<ProductLookupController> _logger;
+  private readonly ILogger<FoodResearchController> _logger;
 
-  public ProductLookupController(
+  public FoodResearchController(
       IOpenFoodFactsService openFoodFactsService,
       IMapper mapper,
-      ILogger<ProductLookupController> logger)
+      ILogger<FoodResearchController> logger)
   {
     _openFoodFactsService = openFoodFactsService ?? throw new ArgumentNullException(nameof(openFoodFactsService));
     _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
