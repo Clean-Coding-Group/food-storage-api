@@ -4,7 +4,7 @@ using System.Text;
 
 namespace FoodStorageApi.Infrastructure.Services;
 
-public class BaseWebServiceClient : IBaseWebServiceClient
+public class BaseWebServiceClient : IBaseWebServiceClient, IDisposable
 {
   private readonly HttpClient _httpClient;
   private readonly ILogger<BaseWebServiceClient> _logger;
@@ -17,6 +17,9 @@ public class BaseWebServiceClient : IBaseWebServiceClient
 
   public async Task<string> GetAsync(string endpoint, CancellationToken cancellationToken = default)
   {
+    if (string.IsNullOrEmpty(endpoint))
+      throw new ArgumentNullException(nameof(endpoint));
+
     try
     {
       _logger.LogInformation("Making GET request to {Endpoint}", endpoint);
@@ -39,6 +42,11 @@ public class BaseWebServiceClient : IBaseWebServiceClient
 
   public async Task<string> PostAsync(string endpoint, string content, CancellationToken cancellationToken = default)
   {
+    if (string.IsNullOrEmpty(endpoint))
+      throw new ArgumentNullException(nameof(endpoint));
+    if (content == null)
+      throw new ArgumentNullException(nameof(content));
+
     try
     {
       _logger.LogInformation("Making POST request to {Endpoint}", endpoint);
@@ -62,6 +70,11 @@ public class BaseWebServiceClient : IBaseWebServiceClient
 
   public async Task<string> PutAsync(string endpoint, string content, CancellationToken cancellationToken = default)
   {
+    if (string.IsNullOrEmpty(endpoint))
+      throw new ArgumentNullException(nameof(endpoint));
+    if (content == null)
+      throw new ArgumentNullException(nameof(content));
+
     try
     {
       _logger.LogInformation("Making PUT request to {Endpoint}", endpoint);
@@ -85,6 +98,9 @@ public class BaseWebServiceClient : IBaseWebServiceClient
 
   public async Task<string> DeleteAsync(string endpoint, CancellationToken cancellationToken = default)
   {
+    if (string.IsNullOrEmpty(endpoint))
+      throw new ArgumentNullException(nameof(endpoint));
+
     try
     {
       _logger.LogInformation("Making DELETE request to {Endpoint}", endpoint);
@@ -103,5 +119,10 @@ public class BaseWebServiceClient : IBaseWebServiceClient
       _logger.LogError(ex, "Error making DELETE request to {Endpoint}", endpoint);
       throw;
     }
+  }
+
+  public void Dispose()
+  {
+    _httpClient?.Dispose();
   }
 }
