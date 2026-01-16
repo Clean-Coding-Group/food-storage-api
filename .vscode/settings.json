@@ -1,0 +1,19 @@
+{
+  "dotnet.defaultSolution": "FoodStorageApi.sln",
+  "omnisharp.defaultLaunchSolution": "FoodStorageApi.sln",
+  "files.exclude": {
+    "**/bin": true,
+    "**/obj": true
+  },
+  "csharp.semanticHighlighting.enabled": true,
+  "csharp.format.enable": true,
+  "editor.formatOnSave": true,
+  "omnisharp.enableRoslynAnalyzers": true,
+  "omnisharp.enableEditorConfigSupport": true,
+  "dotnet.completion.showCompletionItemsFromUnimportedNamespaces": true,
+  "dotnet.codeLens.enableReferencesCodeLens": true,
+  "files.watcherExclude": {
+    "**/bin/**": true,
+    "**/obj/**": true
+  }
+}

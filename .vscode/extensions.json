@@ -1,0 +1,9 @@
+{
+  "recommendations": [
+    "ms-dotnettools.csharp",
+    "ms-dotnettools.csdevkit",
+    "ms-vscode.vscode-json",
+    "ms-dotnettools.vscode-dotnet-runtime",
+    "humao.rest-client"
+  ]
+}
