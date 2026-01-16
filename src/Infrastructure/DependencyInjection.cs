@@ -15,6 +15,9 @@ public static class DependencyInjection
       client.DefaultRequestHeaders.Add("User-Agent", "FoodStorageApi/1.0");
     });
 
+    // Register OpenFoodFacts service
+    services.AddScoped<IOpenFoodFactsService, OpenFoodFactsService>();
+
     // Register other infrastructure services here
 
     return services;
