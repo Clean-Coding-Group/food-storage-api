@@ -39,7 +39,7 @@ public partial class OpenFoodFactsService : IOpenFoodFactsService, IDisposable
     {
       _logger.LogInformation("Retrieving product information for barcode: {Barcode}", barcode);
 
-      var endpoint = $"{BaseUrl}/product/{barcode}.json?fields={ProductFields}";
+      var endpoint = $"{BaseUrl}/product/{barcode}.json?fields={ProductFields}&lc=en";
       var response = await _webServiceClient.GetAsync(endpoint, cancellationToken);
 
       if (string.IsNullOrWhiteSpace(response))
@@ -75,8 +75,8 @@ public partial class OpenFoodFactsService : IOpenFoodFactsService, IDisposable
   /// </summary>
   public async Task<IEnumerable<OpenFoodFactsProduct>> SearchProductsByNameAsync(
       string productName,
-      int pageSize = 20,
       int page = 1,
+      int pageSize = 20,
       CancellationToken cancellationToken = default)
   {
     if (string.IsNullOrWhiteSpace(productName))
@@ -94,7 +94,7 @@ public partial class OpenFoodFactsService : IOpenFoodFactsService, IDisposable
           productName, page, pageSize);
 
       var encodedName = Uri.EscapeDataString(productName);
-      var endpoint = $"{BaseUrl}/search?search_terms={encodedName}&page={page}&page_size={pageSize}&fields={ProductFields}&json=true";
+      var endpoint = $"{BaseUrl}/search?search_terms={encodedName}&page={page}&page_size={pageSize}&fields={ProductFields}&json=true&lc=en";
 
       var response = await _webServiceClient.GetAsync(endpoint, cancellationToken);
 
