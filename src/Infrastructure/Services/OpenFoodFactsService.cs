@@ -8,7 +8,7 @@ namespace FoodStorageApi.Infrastructure.Services;
 /// <summary>
 /// Service for interacting with the OpenFoodFacts API
 /// </summary>
-public class OpenFoodFactsService : IOpenFoodFactsService, IDisposable
+public partial class OpenFoodFactsService : IOpenFoodFactsService, IDisposable
 {
   private readonly IBaseWebServiceClient _webServiceClient;
   private readonly ILogger<OpenFoodFactsService> _logger;
@@ -124,23 +124,5 @@ public class OpenFoodFactsService : IOpenFoodFactsService, IDisposable
   {
     // The web service client will be disposed by DI container
     // This method is here to implement IDisposable for consistency
-  }
-
-  /// <summary>
-  /// Internal model for search response
-  /// </summary>
-  private class OpenFoodFactsSearchResponse
-  {
-    [System.Text.Json.Serialization.JsonPropertyName("products")]
-    public List<OpenFoodFactsProduct> Products { get; set; } = new();
-
-    [System.Text.Json.Serialization.JsonPropertyName("count")]
-    public int Count { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("page")]
-    public int Page { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("page_size")]
-    public int PageSize { get; set; }
   }
 }
