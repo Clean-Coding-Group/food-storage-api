@@ -8,7 +8,7 @@ namespace FoodStorageApi.Infrastructure.Services;
 /// <summary>
 /// Service for interacting with the OpenFoodFacts API
 /// </summary>
-public class OpenFoodFactsService : IOpenFoodFactsService, IDisposable
+public partial class OpenFoodFactsService : IOpenFoodFactsService, IDisposable
 {
   private readonly IBaseWebServiceClient _webServiceClient;
   private readonly ILogger<OpenFoodFactsService> _logger;
@@ -39,7 +39,7 @@ public class OpenFoodFactsService : IOpenFoodFactsService, IDisposable
     {
       _logger.LogInformation("Retrieving product information for barcode: {Barcode}", barcode);
 
-      var endpoint = $"{BaseUrl}/product/{barcode}.json?fields={ProductFields}";
+      var endpoint = $"{BaseUrl}/product/{barcode}.json?fields={ProductFields}&lc=en";
       var response = await _webServiceClient.GetAsync(endpoint, cancellationToken);
 
       if (string.IsNullOrWhiteSpace(response))
@@ -75,8 +75,8 @@ public class OpenFoodFactsService : IOpenFoodFactsService, IDisposable
   /// </summary>
   public async Task<IEnumerable<OpenFoodFactsProduct>> SearchProductsByNameAsync(
       string productName,
-      int pageSize = 20,
       int page = 1,
+      int pageSize = 20,
       CancellationToken cancellationToken = default)
   {
     if (string.IsNullOrWhiteSpace(productName))
@@ -94,7 +94,7 @@ public class OpenFoodFactsService : IOpenFoodFactsService, IDisposable
           productName, page, pageSize);
 
       var encodedName = Uri.EscapeDataString(productName);
-      var endpoint = $"{BaseUrl}/search?search_terms={encodedName}&page={page}&page_size={pageSize}&fields={ProductFields}&json=true";
+      var endpoint = $"{BaseUrl}/search?search_terms={encodedName}&page={page}&page_size={pageSize}&fields={ProductFields}&json=true&lc=en";
 
       var response = await _webServiceClient.GetAsync(endpoint, cancellationToken);
 
@@ -124,23 +124,5 @@ public class OpenFoodFactsService : IOpenFoodFactsService, IDisposable
   {
     // The web service client will be disposed by DI container
     // This method is here to implement IDisposable for consistency
-  }
-
-  /// <summary>
-  /// Internal model for search response
-  /// </summary>
-  private class OpenFoodFactsSearchResponse
-  {
-    [System.Text.Json.Serialization.JsonPropertyName("products")]
-    public List<OpenFoodFactsProduct> Products { get; set; } = new();
-
-    [System.Text.Json.Serialization.JsonPropertyName("count")]
-    public int Count { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("page")]
-    public int Page { get; set; }
-
-    [System.Text.Json.Serialization.JsonPropertyName("page_size")]
-    public int PageSize { get; set; }
   }
 }

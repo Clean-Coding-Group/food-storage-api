@@ -1,7 +1,8 @@
 using AutoMapper;
 using FoodStorageApi.Api.DTOs.OpenFoodFacts;
-using FoodStorageApi.Application.Common.Interfaces;
+using FoodStorageApi.Application.Features.OpenFoodFacts.Queries;
 using FoodStorageApi.Domain.Models.OpenFoodFacts;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FoodStorageApi.Api.Controllers;
@@ -12,18 +13,18 @@ namespace FoodStorageApi.Api.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Produces("application/json")]
-public class ProductLookupController : ControllerBase
+public class FoodResearchController : ControllerBase
 {
-  private readonly IOpenFoodFactsService _openFoodFactsService;
+  private readonly IMediator _mediator;
   private readonly IMapper _mapper;
-  private readonly ILogger<ProductLookupController> _logger;
+  private readonly ILogger<FoodResearchController> _logger;
 
-  public ProductLookupController(
-      IOpenFoodFactsService openFoodFactsService,
+  public FoodResearchController(
+      IMediator mediator,
       IMapper mapper,
-      ILogger<ProductLookupController> logger)
+      ILogger<FoodResearchController> logger)
   {
-    _openFoodFactsService = openFoodFactsService ?? throw new ArgumentNullException(nameof(openFoodFactsService));
+    _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
     _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
     _logger = logger ?? throw new ArgumentNullException(nameof(logger));
   }
@@ -56,7 +57,8 @@ public class ProductLookupController : ControllerBase
 
       _logger.LogInformation("Received request for product with barcode: {Barcode}", barcode);
 
-      var result = await _openFoodFactsService.GetProductByBarcodeAsync(barcode, cancellationToken);
+      var query = new GetProductByBarcodeQuery(barcode);
+      var result = await _mediator.Send(query, cancellationToken);
 
       if (result == null || !result.IsSuccess)
       {
@@ -97,8 +99,8 @@ public class ProductLookupController : ControllerBase
   [ProducesResponseType(StatusCodes.Status500InternalServerError)]
   public async Task<ActionResult<IEnumerable<OpenFoodFactsProductDto>>> SearchProducts(
       [FromQuery] string query,
-      [FromQuery] int pageSize = 20,
       [FromQuery] int page = 1,
+      [FromQuery] int pageSize = 20,
       CancellationToken cancellationToken = default)
   {
     try
@@ -121,7 +123,8 @@ public class ProductLookupController : ControllerBase
       _logger.LogInformation("Received search request for: {Query}, page: {Page}, size: {PageSize}",
           query, page, pageSize);
 
-      var results = await _openFoodFactsService.SearchProductsByNameAsync(query, pageSize, page, cancellationToken);
+      var searchQuery = new SearchProductsQuery(query, page, pageSize);
+      var results = await _mediator.Send(searchQuery, cancellationToken);
 
       var resultsDto = _mapper.Map<IEnumerable<OpenFoodFactsProductDto>>(results);
       return Ok(resultsDto);

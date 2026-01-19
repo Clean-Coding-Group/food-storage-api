@@ -1,0 +1,40 @@
+name: Run tests and publish resutls on PRs
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read #needed to read the repository content
+  checks: write #needed to post check run results
+  pull-requests: write #needed to post PR comments for test results
+
+jobs:
+  run-tests:
+    name: Run Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: "8.x"
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Run tests
+        run: |
+          mkdir -p test-results
+          dotnet test --logger "trx;LogFileName=test-results.trx" --results-directory test-results
+        continue-on-error: true
+
+      - name: Publish Test Results
+        uses: EnricoMi/publish-test-results-action@v2
+        if: always()
+        with:
+          files: test-results/test-results.trx

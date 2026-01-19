@@ -25,7 +25,7 @@ public interface IOpenFoodFactsService
   /// <returns>List of matching products</returns>
   Task<IEnumerable<OpenFoodFactsProduct>> SearchProductsByNameAsync(
       string productName,
-      int pageSize = 20,
       int page = 1,
+      int pageSize = 20,
       CancellationToken cancellationToken = default);
 }
