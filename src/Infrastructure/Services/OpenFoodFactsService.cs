@@ -13,7 +13,8 @@ public partial class OpenFoodFactsService : IOpenFoodFactsService, IDisposable
   private readonly IBaseWebServiceClient _webServiceClient;
   private readonly ILogger<OpenFoodFactsService> _logger;
   private readonly JsonSerializerOptions _jsonOptions;
-  private const string BaseUrl = "https://world.openfoodfacts.org/api/v2";
+  private const string BaseUrl = "https://us.openfoodfacts.org/api/v2";
+  private const string SearchBaseUrl = "https://us.openfoodfacts.org/cgi";
   private const string ProductFields = "code,product_name,brands,image_url,serving_quantity,serving_quantity_unit,image_ingredients_url";
 
   public OpenFoodFactsService(IBaseWebServiceClient webServiceClient, ILogger<OpenFoodFactsService> logger)
@@ -39,7 +40,7 @@ public partial class OpenFoodFactsService : IOpenFoodFactsService, IDisposable
     {
       _logger.LogInformation("Retrieving product information for barcode: {Barcode}", barcode);
 
-      var endpoint = $"{BaseUrl}/product/{barcode}.json?fields={ProductFields}&lc=en";
+      var endpoint = $"{BaseUrl}/product/{barcode}.json?fields={ProductFields}";
       var response = await _webServiceClient.GetAsync(endpoint, cancellationToken);
 
       if (string.IsNullOrWhiteSpace(response))
@@ -94,7 +95,7 @@ public partial class OpenFoodFactsService : IOpenFoodFactsService, IDisposable
           productName, page, pageSize);
 
       var encodedName = Uri.EscapeDataString(productName);
-      var endpoint = $"{BaseUrl}/search?search_terms={encodedName}&page={page}&page_size={pageSize}&fields={ProductFields}&json=true&lc=en";
+      var endpoint = $"{SearchBaseUrl}/search.pl?search_terms={encodedName}&search_simple=1&action=process&json=1&page={page}&page_size={pageSize}&fields={ProductFields}";
 
       var response = await _webServiceClient.GetAsync(endpoint, cancellationToken);
 
