@@ -1,16 +1,21 @@
-name: Run tests and publish resutls on PRs
+name: Build and test API on push or PR
 
+#controls when the workflow is triggered.  Works on push or pull request to main branch
 on:
+  push:
+    branches:
+      - main
   pull_request:
     branches:
       - main
 
+# specify the permissions for the workflow
 permissions:
   contents: read #needed to read the repository content
   checks: write #needed to post check run results
   pull-requests: write #needed to post PR comments for test results
 
-jobs:
+  #workflow is made of one or more jobs that can be run sequentially or in parallel
   run-tests:
     name: Run Tests
     runs-on: ubuntu-latest
