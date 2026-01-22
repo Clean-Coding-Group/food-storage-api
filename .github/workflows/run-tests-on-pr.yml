@@ -15,7 +15,8 @@ permissions:
   checks: write #needed to post check run results
   pull-requests: write #needed to post PR comments for test results
 
-  #workflow is made of one or more jobs that can be run sequentially or in parallel
+# workflow is made of one or more jobs that can be run sequentially or in parallel
+jobs:
   run-tests:
     name: Run Tests
     runs-on: ubuntu-latest
