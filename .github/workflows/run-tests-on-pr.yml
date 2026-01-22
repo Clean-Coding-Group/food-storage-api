@@ -40,7 +40,9 @@ jobs:
         continue-on-error: true
 
       - name: Publish Test Results
-        uses: EnricoMi/publish-test-results-action@v2
+        uses: dorny/test-reporter@v1
         if: always()
         with:
-          files: test-results/test-results.trx
+          name: . NET Tests
+          path: test-results/*. trx
+          reporter: dotnet-trx
