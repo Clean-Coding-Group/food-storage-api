@@ -36,19 +36,18 @@ jobs:
       - name: Run tests with coverage
         run: |
           mkdir -p test-results
-          mkdir -p coverage
-          dotnet test --logger "trx;LogFileName=test-results.trx" --results-directory test-results --collect:"XPlat Code Coverage" --results-directory coverage
+          dotnet test --logger "trx;LogFileName=test-results.trx" --results-directory test-results --collect:"XPlat Code Coverage"
         continue-on-error: true
 
       - name: Display code coverage summary
         run: |
           echo "Code Coverage Results:"
-          find coverage -name "coverage.cobertura.xml" -exec echo "Coverage file: {}" \;
+          find test-results -name "coverage.cobertura.xml" -exec echo "Coverage file: {}" \;
           # Install reportgenerator tool to create summary
           dotnet tool install -g dotnet-reportgenerator-globaltool
-          if [ -f coverage/*/coverage.cobertura.xml ]; then
-            reportgenerator -reports:coverage/*/coverage.cobertura.xml -targetdir:coverage/report -reporttypes:TextSummary
-            cat coverage/report/Summary.txt
+          if [ -f test-results/*/coverage.cobertura.xml ]; then
+            reportgenerator -reports:test-results/*/coverage.cobertura.xml -targetdir:test-results/coverage-report -reporttypes:TextSummary
+            cat test-results/coverage-report/Summary.txt
           else
             echo "No coverage files found"
           fi
@@ -58,11 +57,11 @@ jobs:
           echo "Contents of test-results directory:"
           ls -la test-results/ || echo "test-results directory not found"
           echo "Looking for .trx files:"
-          find . -name "*.trx" -type f || echo "No .trx files found"
-          echo "Current working directory:"
-          pwd
-          echo "All files in current directory:"
-          ls -la
+          find test-results -name "*.trx" -type f || echo "No .trx files found"
+          echo "Looking for coverage files:"
+          find test-results -name "coverage.cobertura.xml" -type f || echo "No coverage files found"
+          echo "Full directory structure of test-results:"
+          find test-results -type f || echo "test-results directory is empty"
 
       - name: Publish Test Results
         uses: dorny/test-reporter@v1
@@ -76,7 +75,7 @@ jobs:
         uses: irongut/CodeCoverageSummary@v1.3.0
         if: always()
         with:
-          filename: coverage/*/coverage.cobertura.xml
+          filename: test-results/*/coverage.cobertura.xml
           badge: true
           fail_below_min: false
           format: markdown
@@ -96,5 +95,5 @@ jobs:
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v4
         with:
-          files: coverage/*/coverage.cobertura.xml
+          files: test-results/*/coverage.cobertura.xml
           fail_ci_if_error: true
