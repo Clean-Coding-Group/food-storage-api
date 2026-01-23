@@ -53,6 +53,17 @@ jobs:
             echo "No coverage files found"
           fi
 
+      - name: Debug - List test results directory
+        run: |
+          echo "Contents of test-results directory:"
+          ls -la test-results/ || echo "test-results directory not found"
+          echo "Looking for .trx files:"
+          find . -name "*.trx" -type f || echo "No .trx files found"
+          echo "Current working directory:"
+          pwd
+          echo "All files in current directory:"
+          ls -la
+
       - name: Publish Test Results
         uses: dorny/test-reporter@v1
         if: always()
