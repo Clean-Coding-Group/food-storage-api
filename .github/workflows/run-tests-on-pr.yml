@@ -33,22 +33,25 @@ jobs:
       - name: Restore dependencies
         run: dotnet restore
 
-      - name: Run tests
+      - name: Run tests with coverage
         run: |
           mkdir -p test-results
-          dotnet test --logger "trx;LogFileName=test-results.trx" --results-directory test-results
+          mkdir -p coverage
+          dotnet test --logger "trx;LogFileName=test-results.trx" --results-directory test-results --collect:"XPlat Code Coverage" --results-directory coverage
         continue-on-error: true
 
-      - name: Debug - List test results directory
+      - name: Display code coverage summary
         run: |
-          echo "Contents of test-results directory:"
-          ls -la test-results/ || echo "test-results directory not found"
-          echo "Looking for .trx files:"
-          find . -name "*.trx" -type f || echo "No .trx files found"
-          echo "Current working directory:"
-          pwd
-          echo "All files in current directory:"
-          ls -la
+          echo "Code Coverage Results:"
+          find coverage -name "coverage.cobertura.xml" -exec echo "Coverage file: {}" \;
+          # Install reportgenerator tool to create summary
+          dotnet tool install -g dotnet-reportgenerator-globaltool
+          if [ -f coverage/*/coverage.cobertura.xml ]; then
+            reportgenerator -reports:coverage/*/coverage.cobertura.xml -targetdir:coverage/report -reporttypes:TextSummary
+            cat coverage/report/Summary.txt
+          else
+            echo "No coverage files found"
+          fi
 
       - name: Publish Test Results
         uses: dorny/test-reporter@v1
@@ -57,3 +60,30 @@ jobs:
           name: .NET Tests
           path: test-results/*.trx
           reporter: dotnet-trx
+
+      - name: Code Coverage Report
+        uses: irongut/CodeCoverageSummary@v1.3.0
+        if: always()
+        with:
+          filename: coverage/*/coverage.cobertura.xml
+          badge: true
+          fail_below_min: false
+          format: markdown
+          hide_branch_rate: false
+          hide_complexity: true
+          indicators: true
+          output: both
+          thresholds: "60 80"
+
+      - name: Add Coverage PR Comment
+        uses: marocchino/sticky-pull-request-comment@v2
+        if: github.event_name == 'pull_request'
+        with:
+          recreate: true
+          path: code-coverage-results.md
+
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          files: coverage/*/coverage.cobertura.xml
+          fail_ci_if_error: true
