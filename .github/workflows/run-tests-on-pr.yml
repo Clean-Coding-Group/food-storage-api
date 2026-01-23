@@ -92,8 +92,8 @@ jobs:
           recreate: true
           path: code-coverage-results.md
 
-      - name: Upload coverage reports to Codecov
-        uses: codecov/codecov-action@v4
-        with:
-          files: test-results/*/coverage.cobertura.xml
-          fail_ci_if_error: true
+      # - name: Upload coverage reports to Codecov
+      #   uses: codecov/codecov-action@v4
+      #   with:
+      #     files: test-results/*/coverage.cobertura.xml
+      #     fail_ci_if_error: true
