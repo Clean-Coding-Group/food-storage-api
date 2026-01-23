@@ -1,86 +1,79 @@
 using FoodStorageApi.Application.Common.Interfaces;
 using FoodStorageApi.Infrastructure.Services;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using System.Net;
 
 namespace FoodStorageApi.Infrastructure.IntegrationTests.Services;
 
-public class BaseWebServiceClientIntegrationTests : IClassFixture<WebApplicationFactory<TestStartup>>
+public class BaseWebServiceClientIntegrationTests : IDisposable
 {
-  private readonly WebApplicationFactory<TestStartup> _factory;
   private readonly HttpClient _httpClient;
   private readonly IBaseWebServiceClient _webServiceClient;
+  private readonly ILogger<BaseWebServiceClient> _logger;
 
-  public BaseWebServiceClientIntegrationTests(WebApplicationFactory<TestStartup> factory)
+  public BaseWebServiceClientIntegrationTests()
   {
-    _factory = factory;
-
-    // Use the factory directly for the test endpoints
-    _httpClient = _factory.CreateClient();
-
-    // Get logger from the factory's service provider
-    using var scope = _factory.Services.CreateScope();
-    var logger = scope.ServiceProvider.GetService<ILogger<BaseWebServiceClient>>()
-                 ?? new LoggerFactory().CreateLogger<BaseWebServiceClient>();
-    _webServiceClient = new BaseWebServiceClient(_httpClient, logger);
+    _httpClient = new HttpClient();
+    _logger = new LoggerFactory().CreateLogger<BaseWebServiceClient>();
+    _webServiceClient = new BaseWebServiceClient(_httpClient, _logger);
   }
 
   [Fact]
   public async Task GetAsync_WithRealHttpClient_ReturnsExpectedResponse()
   {
-    // Arrange
-    const string expectedResponse = "Hello from GET endpoint";
+    // Arrange - using httpbin.org for testing
+    const string endpoint = "https://httpbin.org/json";
 
     // Act
-    var result = await _webServiceClient.GetAsync("/test-get");
+    var result = await _webServiceClient.GetAsync(endpoint);
 
     // Assert
-    Assert.Equal(expectedResponse, result);
+    Assert.NotNull(result);
+    Assert.Contains("slideshow", result); // httpbin.org/json returns a JSON with slideshow data
   }
 
   [Fact]
   public async Task PostAsync_WithRealHttpClient_ReturnsExpectedResponse()
   {
-    // Arrange
+    // Arrange - using httpbin.org for testing
+    const string endpoint = "https://httpbin.org/post";
     const string content = "test content";
-    const string expectedResponse = "Hello from POST endpoint";
 
     // Act
-    var result = await _webServiceClient.PostAsync("/test-post", content);
+    var result = await _webServiceClient.PostAsync(endpoint, content);
 
     // Assert
-    Assert.Equal(expectedResponse, result);
+    Assert.NotNull(result);
+    Assert.Contains("\"data\": \"test content\"", result); // httpbin echoes back the data
   }
 
   [Fact]
   public async Task PutAsync_WithRealHttpClient_ReturnsExpectedResponse()
   {
-    // Arrange
+    // Arrange - using httpbin.org for testing
+    const string endpoint = "https://httpbin.org/put";
     const string content = "test content";
-    const string expectedResponse = "Hello from PUT endpoint";
 
     // Act
-    var result = await _webServiceClient.PutAsync("/test-put", content);
+    var result = await _webServiceClient.PutAsync(endpoint, content);
 
     // Assert
-    Assert.Equal(expectedResponse, result);
+    Assert.NotNull(result);
+    Assert.Contains("\"data\": \"test content\"", result); // httpbin echoes back the data
   }
 
   [Fact]
   public async Task DeleteAsync_WithRealHttpClient_ReturnsExpectedResponse()
   {
-    // Arrange
-    const string expectedResponse = "Hello from DELETE endpoint";
+    // Arrange - using httpbin.org for testing
+    const string endpoint = "https://httpbin.org/delete";
 
     // Act
-    var result = await _webServiceClient.DeleteAsync("/test-delete");
+    var result = await _webServiceClient.DeleteAsync(endpoint);
 
     // Assert
-    Assert.Equal(expectedResponse, result);
+    Assert.NotNull(result);
+    Assert.Contains("\"url\": \"https://httpbin.org/delete\"", result);
   }
 
   [Fact]
@@ -88,80 +81,38 @@ public class BaseWebServiceClientIntegrationTests : IClassFixture<WebApplication
   {
     // Act & Assert
     await Assert.ThrowsAsync<HttpRequestException>(
-        () => _webServiceClient.GetAsync("/non-existent"));
+        () => _webServiceClient.GetAsync("https://httpbin.org/status/404"));
   }
 
   [Fact]
   public async Task PostAsync_WithJsonContent_SendsCorrectContentType()
   {
-    // Arrange
+    // Arrange - using httpbin.org which echoes headers
+    const string endpoint = "https://httpbin.org/post";
     const string jsonContent = "{\"name\":\"test\",\"value\":123}";
 
     // Act
-    var result = await _webServiceClient.PostAsync("/test-post-json", jsonContent);
+    var result = await _webServiceClient.PostAsync(endpoint, jsonContent);
 
     // Assert
+    Assert.NotNull(result);
     Assert.Contains("application/json", result);
+    Assert.Contains("\"data\": \"{\\\"name\\\":\\\"test\\\",\\\"value\\\":123}\"", result);
   }
 
   [Fact]
   public async Task GetAsync_WithTimeout_ThrowsTaskCanceledException()
   {
-    // Arrange
+    // Arrange - using httpbin delay endpoint with short timeout
     using var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(100));
 
     // Act & Assert
     await Assert.ThrowsAnyAsync<OperationCanceledException>(
-        () => _webServiceClient.GetAsync("/test-delay", cts.Token));
-  }
-}
-
-// Test startup class for creating mock endpoints
-public class TestStartup
-{
-  public void ConfigureServices(IServiceCollection services)
-  {
-    services.AddRouting();
-    services.AddLogging();
+        () => _webServiceClient.GetAsync("https://httpbin.org/delay/5", cts.Token));
   }
 
-  public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+  public void Dispose()
   {
-    app.UseRouting();
-
-    app.UseEndpoints(endpoints =>
-    {
-      endpoints.MapGet("/test-get", async context =>
-          {
-            await context.Response.WriteAsync("Hello from GET endpoint");
-          });
-
-      endpoints.MapPost("/test-post", async context =>
-          {
-            await context.Response.WriteAsync("Hello from POST endpoint");
-          });
-
-      endpoints.MapPut("/test-put", async context =>
-          {
-            await context.Response.WriteAsync("Hello from PUT endpoint");
-          });
-
-      endpoints.MapDelete("/test-delete", async context =>
-          {
-            await context.Response.WriteAsync("Hello from DELETE endpoint");
-          });
-
-      endpoints.MapPost("/test-post-json", async context =>
-          {
-            var contentType = context.Request.ContentType;
-            await context.Response.WriteAsync($"Content-Type: {contentType}");
-          });
-
-      endpoints.MapGet("/test-delay", async context =>
-          {
-            await Task.Delay(2000); // Simulate slow endpoint
-            await context.Response.WriteAsync("Delayed response");
-          });
-    });
+    _httpClient?.Dispose();
   }
 }

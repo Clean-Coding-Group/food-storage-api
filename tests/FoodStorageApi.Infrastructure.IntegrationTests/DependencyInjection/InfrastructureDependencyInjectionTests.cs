@@ -127,6 +127,6 @@ public class InfrastructureDependencyInjectionTests
     Assert.NotNull(httpClient);
     Assert.Equal(TimeSpan.FromSeconds(30), httpClient.Timeout);
     Assert.Contains(httpClient.DefaultRequestHeaders.UserAgent,
-        ua => ua.Product?.Name == "FoodStorageApi/1.0");
+        ua => ua.Product?.Name == "FoodStorageApi" && ua.Product?.Version == "1.0");
   }
 }

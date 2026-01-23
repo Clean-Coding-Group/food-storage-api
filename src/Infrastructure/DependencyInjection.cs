@@ -12,7 +12,7 @@ public static class DependencyInjection
     services.AddHttpClient<IBaseWebServiceClient, BaseWebServiceClient>(client =>
     {
       client.Timeout = TimeSpan.FromSeconds(30);
-      client.DefaultRequestHeaders.Add("User-Agent", "FoodStorageApi/1.0");
+      client.DefaultRequestHeaders.UserAgent.ParseAdd("FoodStorageApi/1.0");
     });
 
     // Register OpenFoodFacts service
