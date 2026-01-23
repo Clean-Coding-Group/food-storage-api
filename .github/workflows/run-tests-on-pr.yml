@@ -39,7 +39,7 @@ jobs:
           dotnet test --logger "trx;LogFileName=test-results.trx" --results-directory test-results --collect:"XPlat Code Coverage"
         continue-on-error: true
 
-      - name: Display code coverage summary
+      - name: Create code coverage summary
         run: |
           echo "Code Coverage Results:"
           find test-results -name "coverage.cobertura.xml" -exec echo "Coverage file: {}" \;
@@ -52,16 +52,16 @@ jobs:
             echo "No coverage files found"
           fi
 
-      - name: Debug - List test results directory
-        run: |
-          echo "Contents of test-results directory:"
-          ls -la test-results/ || echo "test-results directory not found"
-          echo "Looking for .trx files:"
-          find test-results -name "*.trx" -type f || echo "No .trx files found"
-          echo "Looking for coverage files:"
-          find test-results -name "coverage.cobertura.xml" -type f || echo "No coverage files found"
-          echo "Full directory structure of test-results:"
-          find test-results -type f || echo "test-results directory is empty"
+      # - name: Debug - List test results directory
+      #   run: |
+      #     echo "Contents of test-results directory:"
+      #     ls -la test-results/ || echo "test-results directory not found"
+      #     echo "Looking for .trx files:"
+      #     find test-results -name "*.trx" -type f || echo "No .trx files found"
+      #     echo "Looking for coverage files:"
+      #     find test-results -name "coverage.cobertura.xml" -type f || echo "No coverage files found"
+      #     echo "Full directory structure of test-results:"
+      #     find test-results -type f || echo "test-results directory is empty"
 
       - name: Publish Test Results
         uses: dorny/test-reporter@v1
@@ -71,29 +71,9 @@ jobs:
           path: test-results/*.trx
           reporter: dotnet-trx
 
-      # - name: Code Coverage Report
-      #   uses: irongut/CodeCoverageSummary@v1.3.0
-      #   if: always()
-      #   with:
-      #     filename: "test-results/**/coverage.cobertura.xml"
-      #     badge: true
-      #     fail_below_min: false
-      #     format: markdown
-      #     hide_branch_rate: false
-      #     hide_complexity: true
-      #     indicators: true
-      #     output: both
-      #     thresholds: "60 80"
-
       - name: Add Coverage PR Comment
         uses: marocchino/sticky-pull-request-comment@v2
         if: github.event_name == 'pull_request'
         with:
           recreate: true
           path: code-coverage-results.md
-
-      # - name: Upload coverage reports to Codecov
-      #   uses: codecov/codecov-action@v4
-      #   with:
-      #     files: test-results/*/coverage.cobertura.xml
-      #     fail_ci_if_error: true
